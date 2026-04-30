@@ -1,0 +1,13 @@
+{
+    "task_id": "swarmbench-task-001",
+    "expected_shipping": 1150,
+    "shipping_breakdown": {
+        "region": "Nanyuki",
+        "base_cost": 1000,
+        "size": "XXL",
+        "size_cost": 150
+    },
+    "return_policy_days": 15,
+    "payment_success_code": 0,
+    "required_status_after_payment": "processing"
+}
