@@ -1,36 +1,28 @@
-# This must match the coordination_pattern defined in task.toml
-coordination_pattern: fan-out-synthesize
+# SwarmBench Multi-Agent Blueprint for E-soko
+task_id: "swarmbench-task-001"
+strategy: "sequential_delegation"
 
-# Define the individual units of work
-sub_tasks:
-  - id: fix_core_module
-    description: >
-      Navigate to /workspace/input_artifacts/repo/core. Identify and resolve 
-      three logic bugs related to data validation and inventory checks. 
-      Produce a list of changes made.
-    depends_on: []
-    parallel_group: fix_shards
+subtasks:
+  - id: "audit_logic"
+    role: "Backend Architect"
+    description: "Analyze shop/models.py and payments/views.py to map out the current shipping cost and payment callback logic."
+    dependencies: []
+    estimated_effort: "10m"
 
-  - id: fix_api_module
-    description: >
-      Inspect the /workspace/input_artifacts/repo/api directory. Fix two 
-      issues where endpoints fail on empty JSON payloads. Ensure response 
-      status codes match the API documentation.
-    depends_on: []
-    parallel_group: fix_shards
+  - id: "fix_shipping_and_returns"
+    role: "Python Developer"
+    description: "Implement the corrected math for shipping (Package Size + Region) and fix the 15-day date logic in check_returnable."
+    dependencies: ["audit_logic"]
+    estimated_effort: "15m"
 
-  - id: fix_utils_module
-    description: >
-      Locate the utility helpers in /workspace/input_artifacts/repo/utils. 
-      Patch the memory leak in the data parser and fix the null-pointer 
-      exception in the date formatting helper.
-    depends_on: []
-    parallel_group: fix_shards
+  - id: "verify_payments"
+    role: "Fintech Integration Specialist"
+    description: "Ensure the M-Pesa STK push callback correctly updates the Order status to 'paid' and triggers the 'processing' state."
+    dependencies: ["fix_shipping_and_returns"]
+    estimated_effort: "10m"
 
-  - id: finalize_patch
-    description: >
-      Review the fixes from the core, api, and utils sub-agents. Resolve any 
-      conflicts, ensure uniform coding style, and combine all fixes into a 
-      single unified patch file at /workspace/output/fix.patch.
-    depends_on: [fix_core_module, fix_api_module, fix_utils_module]
-    parallel_group: synthesize
+  - id: "final_validation"
+    role: "QA Engineer"
+    description: "Run the full test suite in tests/test.sh and verify that all edge cases (XXL packages, Nanyuki region, expired returns) pass."
+    dependencies: ["verify_payments"]
+    estimated_effort: "5m"
