@@ -1,0 +1,7 @@
+region_name,base_shipping_cost,is_active,delivery_estimate_days
+Nairobi,100,True,1
+Mombasa,300,True,2
+Kisumu,450,True,3
+Nanyuki,1000,True,2
+Eldoret,400,True,2
+Nakuru,250,True,1
