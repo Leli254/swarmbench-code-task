@@ -1,0 +1,36 @@
+# This must match the coordination_pattern defined in task.toml
+coordination_pattern: fan-out-synthesize
+
+# Define the individual units of work
+sub_tasks:
+  - id: fix_core_module
+    description: >
+      Navigate to /workspace/input_artifacts/repo/core. Identify and resolve 
+      three logic bugs related to data validation and inventory checks. 
+      Produce a list of changes made.
+    depends_on: []
+    parallel_group: fix_shards
+
+  - id: fix_api_module
+    description: >
+      Inspect the /workspace/input_artifacts/repo/api directory. Fix two 
+      issues where endpoints fail on empty JSON payloads. Ensure response 
+      status codes match the API documentation.
+    depends_on: []
+    parallel_group: fix_shards
+
+  - id: fix_utils_module
+    description: >
+      Locate the utility helpers in /workspace/input_artifacts/repo/utils. 
+      Patch the memory leak in the data parser and fix the null-pointer 
+      exception in the date formatting helper.
+    depends_on: []
+    parallel_group: fix_shards
+
+  - id: finalize_patch
+    description: >
+      Review the fixes from the core, api, and utils sub-agents. Resolve any 
+      conflicts, ensure uniform coding style, and combine all fixes into a 
+      single unified patch file at /workspace/output/fix.patch.
+    depends_on: [fix_core_module, fix_api_module, fix_utils_module]
+    parallel_group: synthesize

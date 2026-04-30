@@ -1,0 +1,36 @@
+# SwarmBench Task Metadata for E-soko Order Verification
+name = "E-soko-Order-Logic-Validation"
+version = "1.0.0"
+category = "software-engineering"
+sub_category = "backend-logic"
+
+# Domain tags help the system select the right specialized agents
+domains = ["python", "django", "ecommerce", "fintech"]
+
+[task]
+# The high-level objective the agent sees
+description = "Investigate and fix the order status transition and shipping calculation logic in the E-soko codebase."
+
+# Time limit in seconds (e.g., 40 minutes)
+timeout = 2400
+
+# The reward model: 1.0 is a perfect pass, 0.0 is failure
+reward_type = "binary"
+
+[environment]
+# This points to the Dockerfile we just tweaked
+image_name = "swarmbench-esoko-env"
+workdir = "/workspace"
+
+[evaluation]
+# The entry point script that runs the tests
+entrypoint = "tests/test.sh"
+
+# These files are used to compare the agent's work vs the 'Oracle' solution
+scoring_files = ["tests/judge.py", "tests/oracle.json"]
+
+[metadata]
+# Custom fields for your own tracking
+difficulty = "intermediate"
+author = "Mike"
+project = "E-soko"
