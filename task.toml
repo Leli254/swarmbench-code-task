@@ -1,0 +1,36 @@
+[task]
+# Unique identifier for your task
+
+name = "swarmbench/multi-fix-001"
+# A high-level summary of the objective
+description = "Identify and resolve 8 independent bugs across core, API, and utility modules in the  codebase."
+
+[metadata]
+# 'executable' means success is verified by running a script (test.sh)
+verifier_type = "executable"
+# Defines the specific category of the task
+domain = "code-swe"
+# The swarm strategy: agents branch out to work, then one merges the results
+coordination_pattern = "fan-out-synthesize"
+# How long a senior dev would take to solve this (e.g., 6.0 hours)
+human_solving_hours_estimate = 6.0
+human_solving_hours_justification = "Requires full-repo navigation and fixing bugs in three different architectural layers simultaneously."
+# Estimated number of agents needed in the swarm
+estimated_sub_agents = 9
+# Total tokens expected across the entire swarm (e.g., 400k for a large repo)
+input_token_estimate = 400000
+# The "Structural Wedge": Why a single agent fails
+why_multi_agent = "The codebase size exceeds the 128k context window when all modules are loaded. A swarm is required to process modules in parallel without memory loss."
+
+[agent]
+# Total time allowed for the agents to complete the work (in seconds)
+timeout_sec = 1800
+
+[verifier]
+# Total time allowed for your test.sh/verify.py to run (in seconds)
+timeout_sec = 300
+
+[environment]
+# Resource allocation for the Docker container
+cpus = 2
+memory_mb = 4096
