@@ -1,0 +1,11 @@
+# Harbor Logs
+execution_logs/
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+
+# Environment
+.env
