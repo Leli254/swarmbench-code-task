@@ -143,7 +143,7 @@ Defined in `environment/Dockerfile`.
 ### 1. Setup
 
 ```bash
-git clone <your-repo>
+git clone https://github.com/Leli254/swarmbench
 cd harbor
 ```
 
