@@ -1,36 +1,70 @@
-# SwarmBench Task Metadata for E-soko Order Verification
+# ==============================================================================
+# Task Configuration: E-soko Order Logic Validation
+# 
+# Description:
+# This file defines the metadata, environment constraints, and evaluation 
+# parameters for the E-soko logic remediation task. It is configured to support
+# multi-agent orchestration via the Fan-out-Synthesize pattern.
+# ==============================================================================
+
 name = "E-soko-Order-Logic-Validation"
 version = "1.0.0"
 category = "software-engineering"
 sub_category = "backend-logic"
-
-# Domain tags help the system select the right specialized agents
 domains = ["python", "django", "ecommerce", "fintech"]
 
 [task]
-# The high-level objective the agent sees
-description = "Investigate and fix the order status transition and shipping calculation logic in the E-soko codebase."
-
-# Time limit in seconds (e.g., 40 minutes)
+name = "swarmbench/e-soko-order-logic-fixes"
+description = "Remediate three decoupled logic failures in the E-soko backend: composite shipping math for XXL packages, temporal validation for the 15-day return policy, and state machine transitions within the M-Pesa payment callback hook."
 timeout = 2400
-
-# The reward model: 1.0 is a perfect pass, 0.0 is failure
 reward_type = "binary"
 
 [environment]
-# This points to the Dockerfile we just tweaked
 image_name = "swarmbench-esoko-env"
 workdir = "/workspace"
+cpus = 2
+memory_mb = 4096
+build_timeout_sec = 600
 
 [evaluation]
-# The entry point script that runs the tests
 entrypoint = "tests/test.sh"
-
-# These files are used to compare the agent's work vs the 'Oracle' solution
 scoring_files = ["tests/judge.py", "tests/oracle.json"]
 
+[agent]
+timeout_sec = 600
+
+[verifier]
+timeout_sec = 300
+
 [metadata]
-# Custom fields for your own tracking
+# Benchmarking Metadata
+verifier_type = "executable"
+domain = "code-swe"
+coordination_pattern = "fan-out-synthesize"
+
+# Resource and Effort Estimates
+human_solving_hours_estimate = 2.0
+human_solving_hours_justification = """
+The task involves tracing three independent logic bugs across disparate modules:
+1. Shipping math in shop/models.py.
+2. Return policy arithmetic in the validation layer.
+3. Asynchronous state transitions in the payments webhook (views.py).
+A human developer requires time for context switching and regression testing across these domains.
+"""
+estimated_sub_agents = 4
+input_token_estimate = 50000
+reference_link = ""
+
+# Multi-Agent Rationale
+why_multi_agent = """
+Complexity is distributed across three distinct modules. A single-agent approach 
+risks context window saturation or regression in one module while fixing another. 
+The multi-agent approach allows parallel specialized 'map' agents to focus on 
+isolated bug fixes, while a 'synthesizer' agent ensures global consistency 
+and final test suite compliance.
+"""
+
+# Project Tracking
 difficulty = "intermediate"
 author = "Mike"
 project = "E-soko"

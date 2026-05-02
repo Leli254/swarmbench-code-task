@@ -1,0 +1,44 @@
+services:
+  db:
+    image: postgres:15
+    restart: always
+    environment:
+      POSTGRES_USER: soko_user
+      POSTGRES_PASSWORD: soko_pass
+      POSTGRES_DB: soko_db
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - soko_network
+
+  redis:
+    image: redis:7
+    restart: always
+    networks:
+      - soko_network
+
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    command: gunicorn core.wsgi:application --bind 0.0.0.0:8000 --workers 3
+    volumes:
+      - .:/app
+    ports:
+      - "8000:8000"
+    depends_on:
+      - db
+      - redis
+    environment:
+      DJANGO_SETTINGS_MODULE: core.settings.production
+      DATABASE_URL: postgres://soko_user:soko_pass@db:5432/soko_db
+      REDIS_URL: redis://redis:6379/0
+    networks:
+      - soko_network
+
+volumes:
+  postgres_data:
+
+networks:
+  soko_network:
+    driver: bridge

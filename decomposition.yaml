@@ -1,28 +1,47 @@
-# SwarmBench Multi-Agent Blueprint for E-soko
-task_id: "swarmbench-task-001"
-strategy: "sequential_delegation"
+# ==============================================================================
+# Harbor Task Decomposition: E-soko Logic Remediation
+# Coordination Pattern: Fan-out-Synthesize (Map-Reduce)
+# 
+# Design Philosophy:
+# This configuration leverages a parallel 'Map' phase to address independent 
+# logic errors in shipping, returns, and payments simultaneously after an 
+# initial discovery audit. A final 'Synthesize' phase ensures cross-module 
+# integration and verification of the global state.
+# ==============================================================================
 
-subtasks:
-  - id: "audit_logic"
-    role: "Backend Architect"
-    description: "Analyze shop/models.py and payments/views.py to map out the current shipping cost and payment callback logic."
-    dependencies: []
-    estimated_effort: "10m"
+coordination_pattern: fan-out-synthesize
 
-  - id: "fix_shipping_and_returns"
-    role: "Python Developer"
-    description: "Implement the corrected math for shipping (Package Size + Region) and fix the 15-day date logic in check_returnable."
-    dependencies: ["audit_logic"]
-    estimated_effort: "15m"
+sub_tasks:
+  - id: audit_logic
+    description: >
+      System Analysis: Perform a structural audit of 'shop/models.py' and 
+      'payments/views.py'. Map the data flow for shipping cost variables 
+      and the state machine transitions for M-Pesa payment callbacks.
+    depends_on: []
+    parallel_group: map
 
-  - id: "verify_payments"
-    role: "Fintech Integration Specialist"
-    description: "Ensure the M-Pesa STK push callback correctly updates the Order status to 'paid' and triggers the 'processing' state."
-    dependencies: ["fix_shipping_and_returns"]
-    estimated_effort: "10m"
+  - id: fix_shipping_and_returns
+    description: >
+      Logic Implementation: Refactor shipping cost calculations to handle 
+      composite pricing (Package Size + Regional Surcharges). Correct the 
+      date arithmetic in 'check_returnable' to ensure a strict 15-day 
+      post-delivery validation window.
+    depends_on: [audit_logic]
+    parallel_group: map
 
-  - id: "final_validation"
-    role: "QA Engineer"
-    description: "Run the full test suite in tests/test.sh and verify that all edge cases (XXL packages, Nanyuki region, expired returns) pass."
-    dependencies: ["verify_payments"]
-    estimated_effort: "5m"
+  - id: verify_payments
+    description: >
+      Payment Integration: Update the M-Pesa STK push callback handler. 
+      Verify that receipt of 'result_code=0' triggers a synchronous 
+      update of Order status to 'paid' followed by the 'processing' state.
+    depends_on: [fix_shipping_and_returns]
+    parallel_group: map
+
+  - id: final_validation
+    description: >
+      Synthesis & Regression Testing: Consolidate all codebase changes. 
+      Execute 'tests/test.sh' to verify that all edge cases—specifically 
+      XXL package delivery to Nanyuki (Total: 1150) and expired return 
+      windows—are fully compliant with system requirements.
+    depends_on: [audit_logic, fix_shipping_and_returns, verify_payments]
+    parallel_group: synthesize

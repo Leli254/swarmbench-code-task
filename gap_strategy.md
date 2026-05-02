@@ -1,14 +1,28 @@
 # Gap Strategy: E-soko Logic Validation
 
 ## 1. The 40-Point Gap Definition
-A standard LLM typically fails this task because it treats the files in isolation. While it might fix a math error in `models.py`, it often misses how that change affects the `MpesaPayment` validation or the final `test.sh` assertions. 
+A standard Large Language Model (LLM) typically fails this task because it attempts to resolve bugs in isolation. While a model might successfully fix a math error in `models.py`, it often fails to account for how that change must propagate through the M-Pesa payment validation hooks and the final `test.sh` assertion suite. The "gap" represents the delta between local code fixes and global system consistency.
 
 ## 2. Complexity Dimensions
-- **Cross-Module Dependency**: The shipping cost is defined in `Shop`, but used in `Orders`, and verified against the `Stripe` checkout session. An agent must trace this flow across three files[cite: 1, 3].
-- **Temporal Logic**: The `check_returnable` method requires understanding `timezone.now()` vs `delivered_at`. Standard models often struggle with date arithmetic and "15-day" boundary conditions in a mock environment.
-- **Asynchronous State**: The M-Pesa integration relies on a callback (`ResultCode`). The agent must simulate the webhook response to see if the `Order` state actually flips to `paid`[cite: 2, 3].
+*   **Cross-Module Dependency**: Shipping cost logic is defined within the `Shop` domain but consumed by `Orders` and verified against regional overrides in the payment layer. An agent must successfully trace state and data flow across three distinct modules to pass.
+*   **Temporal Logic**: The `check_returnable` method requires precise date arithmetic using `timezone.now()` against the `delivered_at` timestamp. General-purpose models frequently struggle with 15-day boundary conditions and timezone-aware object comparisons in a mock environment.
+*   **Asynchronous State Machine**: The integration relies on an M-Pesa callback mechanism (`ResultCode`). The agent must accurately simulate the asynchronous webhook response to verify that the `Order` state transitions correctly from `paid` to `processing`.
 
 ## 3. Swarm Advantage
-- **The "Auditor" Role**: By separating the "Auditor" from the "Coder," we ensure the logic is mapped before a single line of code is changed.
-- **Verification Loop**: The "QA Engineer" agent will execute `test.sh` multiple times, forcing the "Developer" agent to iterate until the shipping math (e.g., $150 + 1000 = 1150$) is perfect[cite: 1].
-- **Specialization**: A specialized "Fintech" agent will recognize M-Pesa `CheckoutRequestID` patterns that a general model might ignore[cite: 2].
+*   **The Auditor/Coder Separation**: By utilizing a dedicated "Auditor" sub-task, the system logic is mapped and the Method Resolution Order (MRO) is understood before any code is modified, preventing hallucinated or conflicting fixes.
+*   **Iterative Verification Loop**: A "Synthesizer" role acts as a QA lead, executing the `test.sh` suite multiple times. This forces the "Developer" agents to iterate until the composite shipping math (150 base + 1000 regional surcharge = 1150) is exact.
+*   **Domain Specialization**: Specialized sub-agents focus on Fintech (M-Pesa callback patterns) and E-commerce (shipping/return arithmetic) independently, preventing the context-window saturation that often leads to regressions in single-agent attempts.
+
+## 4. Expected Score Pattern
+| Configuration | Expected Score | Reason |
+| :--- | :--- | :--- |
+| **Oracle** | 1.0 | Verified ground-truth solution with all logic paths cleared. |
+| **Single-agent** | 0.3 - 0.6 | Typically resolves the math error but fails the temporal or state logic. |
+| **Multi-agent** | 0.9 - 1.0 | Parallel sub-agents handle module-specific bugs without cross-contamination. |
+| **Target Gap** | 40+ points | Represents the failure of monolithic agents to handle structural complexity. |
+
+## 5. Oracle Validation
+*   **Oracle Run Completed**: Yes (2026-05-01)
+*   **Oracle Reward**: 1.0
+*   **Command Used**: `harbor run -a oracle -k 1 -n 1`
+*   **Notes**: Validation confirmed that the shipping total for XXL/Nanyuki orders yields exactly 1150 and the 15-day return window is strictly enforced.
